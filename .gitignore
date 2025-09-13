@@ -1,0 +1,7 @@
+.env
+env/
+out_demo/
+input.pdf
+*.pdf
+temp_*
+*.zip
