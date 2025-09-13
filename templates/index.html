@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Extractor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+
+        .upload-area {
+            border: 3px dashed #ddd;
+            border-radius: 15px;
+            padding: 40px 20px;
+            margin: 30px 0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background-color: #f8f9ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #667eea;
+            background-color: #f0f2ff;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 3em;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .upload-text {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 20px 50px;
+            border-radius: 50px;
+            font-size: 1.3em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 200px;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background-color: #f0f0f0;
+            border-radius: 3px;
+            margin: 20px 0;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-weight: 500;
+            display: none;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .dropbox-link {
+            display: inline-block;
+            background: linear-gradient(135deg, #0061ff 0%, #0051cc 100%);
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 97, 255, 0.3);
+        }
+
+        .dropbox-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 97, 255, 0.4);
+            text-decoration: none;
+            color: white;
+        }
+
+        .files-count {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 8px;
+        }
+
+        .file-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .file-size {
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PDF Extractor</h1>
+        <p class="subtitle">Upload your PDF to extract text, tables, and figures</p>
+        
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📄</div>
+            <div class="upload-text">Drag & drop your PDF here<br>or click to browse</div>
+            <input type="file" id="fileInput" class="file-input" accept=".pdf">
+        </div>
+
+        <div class="button-group">
+            <button class="submit-btn" id="submitBtn" disabled>Submit</button>
+        </div>
+
+        <div class="progress-bar" id="progressBar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="message" id="message"></div>
+        
+        <div class="file-info" id="fileInfo">
+            <div class="file-name" id="fileName"></div>
+            <div class="file-size" id="fileSize"></div>
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const submitBtn = document.getElementById('submitBtn');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+        const message = document.getElementById('message');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+        uploadArea.addEventListener('dragover', handleDragOver);
+        uploadArea.addEventListener('dragleave', handleDragLeave);
+        uploadArea.addEventListener('drop', handleDrop);
+        fileInput.addEventListener('change', handleFileSelect);
+        submitBtn.addEventListener('click', handleSubmit);
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        }
+
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        }
+
+        function handleFile(file) {
+            if (file.type !== 'application/pdf') {
+                showMessage('Please select a valid PDF file.', 'error');
+                return;
+            }
+
+            if (file.size > 16 * 1024 * 1024) {
+                showMessage('File size must be less than 16MB.', 'error');
+                return;
+            }
+
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            fileInfo.style.display = 'block';
+            submitBtn.disabled = false;
+            hideMessage();
+        }
+
+        function handleSubmit() {
+            if (fileInput.files.length === 0) return;
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Processing...';
+            progressBar.style.display = 'block';
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                progressFill.style.width = '100%';
+                setTimeout(() => {
+                    if (data.status === 'success') {
+                        if (data.clickable_link) {
+                            showSuccessWithLink(data.message, data.clickable_link, data.files_uploaded);
+                        } else {
+                            showMessage(data.message, 'success');
+                        }
+                        submitBtn.textContent = 'Complete';
+                    } else {
+                        showMessage(data.message, 'error');
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Submit';
+                    }
+                    progressBar.style.display = 'none';
+                    progressFill.style.width = '0%';
+                }, 500);
+            })
+            .catch(error => {
+                showMessage('Upload failed. Please try again.', 'error');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit';
+                progressBar.style.display = 'none';
+                progressFill.style.width = '0%';
+            });
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+
+        function showMessage(text, type) {
+            message.textContent = text;
+            message.className = `message ${type}`;
+            message.style.display = 'block';
+        }
+
+        function showSuccessWithLink(text, clickableLink, filesCount) {
+            message.innerHTML = `
+                <div>${text}</div>
+                <div style="text-align: center; margin-top: 15px;">
+                    <a href="${clickableLink}" target="_blank" rel="noopener noreferrer" class="dropbox-link">
+                        📁 View Extracted Files on Dropbox
+                    </a>
+                </div>
+                <div class="files-count">${filesCount} files uploaded successfully</div>
+            `;
+            message.className = 'message success';
+            message.style.display = 'block';
+        }
+
+        function hideMessage() {
+            message.style.display = 'none';
+        }
+    </script>
+</body>
+</html>

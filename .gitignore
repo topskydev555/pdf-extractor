@@ -1,7 +1,12 @@
 .env
 env/
 out_demo/
+generated/
+uploads/
 input.pdf
 *.pdf
 temp_*
 *.zip
+/generated
+/uploads
+__pycache__

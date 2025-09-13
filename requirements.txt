@@ -5,6 +5,8 @@ charset-normalizer==3.4.3
 colorama==0.4.6
 defusedxml==0.7.1
 docutils==0.21.2
+dropbox==11.36.2
+Flask==3.0.0
 idna==3.10
 imagesize==1.4.1
 Jinja2==3.1.6
@@ -26,3 +28,4 @@ sphinxcontrib-qthelp==2.0.0
 sphinxcontrib-serializinghtml==2.0.0
 tomli==2.2.1
 urllib3==2.5.0
+Werkzeug==3.0.1
